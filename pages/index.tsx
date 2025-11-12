@@ -78,6 +78,16 @@ export default function Home() {
     setShowDropdown(true);
   }, [searchQuery, allSongs]);
 
+  useEffect(() => {
+  if (allSongs.length > 0) {
+    console.log('First song:', allSongs[0]);
+    console.log('Preview URL:', allSongs[0].preview_url);
+    
+    const songsWithPreview = allSongs.filter(song => song.preview_url);
+    console.log(`Songs with preview: ${songsWithPreview.length} out of ${allSongs.length}`);
+  }
+}, [allSongs]);
+
   const playRandomSnippet = () => {
     // Reset game state
     setResult(null);
