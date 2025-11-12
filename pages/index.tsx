@@ -1,4 +1,3 @@
-// pages/index.tsx
 import { useState, useEffect } from 'react';
 
 interface Song {
@@ -18,10 +17,11 @@ export default function Home() {
   const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const PLAYLIST_ID = '4omM8xYRuisPGb5rpclpUc';
 
-  // Get token and fetch playlist on mount
+  // Get token and fetch ALL playlist songs with pagination
   useEffect(() => {
     async function initialize() {
       try {
@@ -30,21 +30,33 @@ export default function Home() {
         const { access_token } = await tokenRes.json();
         setToken(access_token);
 
-        // Fetch all songs from the playlist
-        const playlistRes = await fetch(
-          `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks`,
-          {
+        // Fetch all songs from the playlist with pagination
+        let allTracks: any[] = [];
+        let nextUrl = `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`;
+
+        while (nextUrl) {
+          const response = await fetch(nextUrl, {
             headers: { "Authorization": `Bearer ${access_token}` }
-          }
-        );
-        const playlistData = await playlistRes.json();
-        
+          });
+          const data = await response.json();
+          
+          // Add tracks from this page
+          allTracks = [...allTracks, ...data.items];
+          
+          // Get next page URL (null if no more pages)
+          nextUrl = data.next;
+          
+          console.log(`Fetched ${allTracks.length} songs so far...`);
+        }
+
         // Extract track info
-        const tracks = playlistData.items.map((item: any) => item.track);
+        const tracks = allTracks.map((item: any) => item.track);
         setAllSongs(tracks);
-        console.log(`Loaded ${tracks.length} songs from playlist`);
+        setLoading(false);
+        console.log(`✅ Loaded all ${tracks.length} songs from playlist`);
       } catch (error) {
         console.error('Error:', error);
+        setLoading(false);
       }
     }
 
@@ -77,9 +89,13 @@ export default function Home() {
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h1>Billy Joel Song Search</h1>
-      <p style={{ color: '#aaa', fontSize: '14px' }}>
-        Searching {allSongs.length} songs from Complete Collection
-      </p>
+      {loading ? (
+        <p style={{ color: '#aaa', fontSize: '14px' }}>Loading songs...</p>
+      ) : (
+        <p style={{ color: '#aaa', fontSize: '14px' }}>
+          Searching {allSongs.length} songs from Complete Collection
+        </p>
+      )}
       
       <div style={{ position: 'relative' }}>
         <input
@@ -88,6 +104,7 @@ export default function Home() {
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => filteredSongs.length > 0 && setShowDropdown(true)}
           placeholder="Search for a Billy Joel song..."
+          disabled={loading}
           style={{
             width: '100%',
             padding: '12px',
@@ -96,7 +113,8 @@ export default function Home() {
             borderRadius: '8px',
             boxSizing: 'border-box',
             backgroundColor: 'black',
-            color: 'white'
+            color: 'white',
+            opacity: loading ? 0.5 : 1
           }}
         />
         
