@@ -83,9 +83,11 @@ export default function Home() {
             width: '100%',
             padding: '12px',
             fontSize: '16px',
-            border: '2px solid #ccc',
+            border: '2px solid white',
             borderRadius: '8px',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            backgroundColor: 'black',
+            color: 'white'
           }}
         />
         
@@ -95,11 +97,11 @@ export default function Home() {
             width: '100%',
             maxHeight: '400px',
             overflowY: 'auto',
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
+            backgroundColor: 'black',
+            border: '1px solid white',
             borderRadius: '8px',
             marginTop: '4px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            boxShadow: '0 4px 6px rgba(255,255,255,0.1)',
             zIndex: 1000
           }}>
             {songs.map(song => (
@@ -109,13 +111,14 @@ export default function Home() {
                 style={{
                   padding: '12px',
                   cursor: 'pointer',
-                  borderBottom: '1px solid #eee',
+                  borderBottom: '1px solid #333',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px'
+                  gap: '12px',
+                  color: 'white'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'black'}
               >
                 {song.album.images[2] && (
                   <img 
@@ -126,7 +129,7 @@ export default function Home() {
                 )}
                 <div>
                   <div style={{ fontWeight: 'bold' }}>{song.name}</div>
-                  <div style={{ fontSize: '14px', color: '#666' }}>{song.album.name}</div>
+                  <div style={{ fontSize: '14px', color: '#aaa' }}>{song.album.name}</div>
                 </div>
               </div>
             ))}
@@ -135,7 +138,7 @@ export default function Home() {
       </div>
 
       {selectedSong && (
-        <div style={{ marginTop: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+        <div style={{ marginTop: '30px', padding: '20px', border: '1px solid white', borderRadius: '8px' }}>
           <h2>Selected Song:</h2>
           <h3>{selectedSong.name}</h3>
           <p>Album: {selectedSong.album.name}</p>
