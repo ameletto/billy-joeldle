@@ -1,5 +1,5 @@
 'use client';
-import GuessBox from "../components/Guessbox";
+import GuessBox from "../components/GuessBox";
 import { useState, useEffect } from 'react';
 
 export default function Home() {
