@@ -1,6 +1,5 @@
-'use client';
-import GuessBox from "../components/GuessBox";
 import { useState, useEffect } from 'react';
+import GuessBox from "../components/GuessBox";
 
 export default function Home() {
   const [token, setToken] = useState<string>('');
@@ -9,14 +8,14 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/token')
       .then(res => {
-        console.log('Response status:', res.status); // Check this!
+        console.log('Response status:', res.status);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         return res.json();
       })
       .then(data => {
-        console.log('Token data:', data); // Check this!
+        console.log('Token data:', data);
         setToken(data.access_token);
       })
       .catch(err => {
@@ -40,7 +39,6 @@ export default function Home() {
         <div id="flex-container">
         <GuessBox/>
         </div>
-      <h1>Spotify Access Token:</h1>
     <div>
       <h1>Spotify Access Token:</h1>
       <p>{token || 'Loading...'}</p>
