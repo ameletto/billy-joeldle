@@ -31,32 +31,36 @@ export default function Home() {
   // Get token and fetch ALL playlist songs with pagination
   useEffect(() => {
     async function initialize() {
-      try {
-        const tokenRes = await fetch('/api/token');
-        const { access_token } = await tokenRes.json();
-        setToken(access_token);
+  try {
+    const tokenRes = await fetch('/api/token');
+    const { access_token } = await tokenRes.json();
+    setToken(access_token);
 
-        let allTracks: any[] = [];
-        let nextUrl = `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`;
+    let allTracks: any[] = [];
+    let nextUrl = `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100&market=US`;  // Added &market=US
 
-        while (nextUrl) {
-          const response = await fetch(nextUrl, {
-            headers: { "Authorization": `Bearer ${access_token}` }
-          });
-          const data = await response.json();
-          allTracks = [...allTracks, ...data.items];
-          nextUrl = data.next;
-        }
-
-        const tracks = allTracks.map((item: any) => item.track);
-        setAllSongs(tracks);
-        setLoading(false);
-        console.log(`✅ Loaded all ${tracks.length} songs from playlist`);
-      } catch (error) {
-        console.error('Error:', error);
-        setLoading(false);
-      }
+    while (nextUrl) {
+      const response = await fetch(nextUrl, {
+        headers: { "Authorization": `Bearer ${access_token}` }
+      });
+      const data = await response.json();
+      allTracks = [...allTracks, ...data.items];
+      nextUrl = data.next;
     }
+
+    const tracks = allTracks.map((item: any) => item.track);
+    setAllSongs(tracks);
+    setLoading(false);
+    console.log(`✅ Loaded all ${tracks.length} songs from playlist`);
+    
+    // Debug: check previews
+    const withPreview = tracks.filter((t: any) => t.preview_url);
+    console.log(`Songs with preview: ${withPreview.length} out of ${tracks.length}`);
+  } catch (error) {
+    console.error('Error:', error);
+    setLoading(false);
+  }
+}
 
     initialize();
   }, []);
