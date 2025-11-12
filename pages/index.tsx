@@ -1,27 +1,35 @@
-import { useState, useEffect } from 'react';
 import GuessBox from "../components/GuessBox";
+import { useState, useEffect } from 'react';
+
+interface Artist {
+  name: string;
+  id: string;
+  images: { url: string }[];
+  followers: { total: number };
+}
 
 export default function Home() {
-  const [token, setToken] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [artist, setArtist] = useState<Artist | null>(null);
 
   useEffect(() => {
-    fetch('/api/token')
-      .then(res => {
-        console.log('Response status:', res.status);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+    async function fetchArtist() {
+      // Get token
+      const tokenRes = await fetch('/api/token');
+      const { access_token } = await tokenRes.json();
+
+      // Search for artist
+      const searchRes = await fetch(
+        `https://api.spotify.com/v1/search?q=ACDC&type=artist&limit=1`,
+        {
+          headers: { "Authorization": `Bearer ${access_token}` }
         }
-        return res.json();
-      })
-      .then(data => {
-        console.log('Token data:', data);
-        setToken(data.access_token);
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        setError(err.message);
-      });
+      );
+      const data = await searchRes.json();
+      
+      setArtist(data.artists.items[0]);
+    }
+
+    fetchArtist();
   }, []);
 
   return (
@@ -39,10 +47,17 @@ export default function Home() {
         <div id="flex-container">
         <GuessBox/>
         </div>
-    <div>
-      <h1>Spotify Access Token:</h1>
-      <p>{token || 'Loading...'}</p>
-      {error && <p style={{color: 'red'}}>Error: {error}</p>}
+        <div>
+      <h1>Artist Search</h1>
+      {artist ? (
+        <div>
+          <h2>{artist.name}</h2>
+          {artist.images[0] && <img src={artist.images[0].url} alt={artist.name} width={300} />}
+          <p>Followers: {artist.followers.total.toLocaleString()}</p>
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
     </>
   );
