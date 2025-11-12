@@ -1,4 +1,3 @@
-import GuessBox from "../components/GuessBox";
 // pages/index.tsx
 import { useState, useEffect } from 'react';
 
@@ -14,53 +13,60 @@ interface Song {
 
 export default function Home() {
   const [token, setToken] = useState<string>('');
+  const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [songs, setSongs] = useState<Song[]>([]);
+  const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Get token on mount
+  const PLAYLIST_ID = '4omM8xYRuisPGb5rpclpUc';
+
+  // Get token and fetch playlist on mount
   useEffect(() => {
-    fetch('/api/token')
-      .then(res => res.json())
-      .then(data => setToken(data.access_token))
-      .catch(err => console.error('Error:', err));
+    async function initialize() {
+      try {
+        // Get token
+        const tokenRes = await fetch('/api/token');
+        const { access_token } = await tokenRes.json();
+        setToken(access_token);
+
+        // Fetch all songs from the playlist
+        const playlistRes = await fetch(
+          `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks`,
+          {
+            headers: { "Authorization": `Bearer ${access_token}` }
+          }
+        );
+        const playlistData = await playlistRes.json();
+        
+        // Extract track info
+        const tracks = playlistData.items.map((item: any) => item.track);
+        setAllSongs(tracks);
+        console.log(`Loaded ${tracks.length} songs from playlist`);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    initialize();
   }, []);
 
-  // Search for songs with debouncing
+  // Filter songs based on search query
   useEffect(() => {
-    if (!token || searchQuery.length < 2) {
-      setSongs([]);
+    if (searchQuery.length < 2) {
+      setFilteredSongs([]);
       setShowDropdown(false);
       return;
     }
 
-    const timeoutId = setTimeout(async () => {
-      try {
-        const response = await fetch(
-          `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery + ' artist:Billy Joel')}&type=track&limit=10`,
-          {
-            headers: { "Authorization": `Bearer ${token}` }
-          }
-        );
-        const data = await response.json();
-        
-        // Filter to only Billy Joel songs
-        const billyJoelSongs = data.tracks.items.filter((track: any) =>
-          track.artists.some((artist: any) => 
-            artist.name.toLowerCase() === 'billy joel'
-          )
-        );
-        
-        setSongs(billyJoelSongs);
-        setShowDropdown(true);
-      } catch (error) {
-        console.error('Search error:', error);
-      }
-    }, 300); // Debounce 300ms
+    const query = searchQuery.toLowerCase();
+    const filtered = allSongs
+      .filter(song => song.name.toLowerCase().includes(query))
+      .slice(0, 10); // Limit to 10 results
 
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, token]);
+    setFilteredSongs(filtered);
+    setShowDropdown(true);
+  }, [searchQuery, allSongs]);
 
   const handleSelectSong = (song: Song) => {
     setSelectedSong(song);
@@ -71,13 +77,16 @@ export default function Home() {
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h1>Billy Joel Song Search</h1>
+      <p style={{ color: '#aaa', fontSize: '14px' }}>
+        Searching {allSongs.length} songs from Complete Collection
+      </p>
       
       <div style={{ position: 'relative' }}>
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onFocus={() => songs.length > 0 && setShowDropdown(true)}
+          onFocus={() => filteredSongs.length > 0 && setShowDropdown(true)}
           placeholder="Search for a Billy Joel song..."
           style={{
             width: '100%',
@@ -91,7 +100,7 @@ export default function Home() {
           }}
         />
         
-        {showDropdown && songs.length > 0 && (
+        {showDropdown && filteredSongs.length > 0 && (
           <div style={{
             position: 'absolute',
             width: '100%',
@@ -104,7 +113,7 @@ export default function Home() {
             boxShadow: '0 4px 6px rgba(255,255,255,0.1)',
             zIndex: 1000
           }}>
-            {songs.map(song => (
+            {filteredSongs.map(song => (
               <div
                 key={song.id}
                 onClick={() => handleSelectSong(song)}
@@ -150,7 +159,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Click outside to close dropdown */}
       {showDropdown && (
         <div 
           onClick={() => setShowDropdown(false)}
