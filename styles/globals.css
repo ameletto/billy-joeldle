@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    padding: 0;
+    margin: 0;
+    font-family: "Oswald", sans-serif;
+    background-color: #000;
+    color: #fff;     
+    text-align: center;
+    font-size: 30px;
+}
+
+h1 {
+    font-weight: 700;
+    font-size: 120px;
+    line-height: 120px;
+}
+
+#flex-container {
+        display: flex;
+        justify-content: center;
+    }
+
+#circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white; 
+    margin: 0 5px
+}
+
+.badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background-color: #222;
+    color: white;
+    position: absolute;
+    top: 24px;
+    left: 24px;
+}
+
+.project-box {
+    border: 1px solid #bbbbbb;
+    padding: 48px;
+    border-radius: 16px; 
+    margin-bottom: 32px;
+    position: relative;
+}
