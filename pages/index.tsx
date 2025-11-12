@@ -35,6 +35,7 @@ export default function Home() {
     const tokenRes = await fetch('/api/token');
     const { access_token } = await tokenRes.json();
     setToken(access_token);
+    (window as any).mySpotifyToken = access_token;
 
     let allTracks: any[] = [];
     let nextUrl = `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100&market=US`;  // Added &market=US
